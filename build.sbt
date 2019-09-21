@@ -1,4 +1,4 @@
-name := "PlayStudy"
+name := "PlayWorld"
 
 version := "0.1"
 

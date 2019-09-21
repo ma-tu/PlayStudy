@@ -1,4 +1,4 @@
-# PlayStudy
+# PlayWorld
 
 sbtのプロジェクトに対して環境構築していくための情報
 
