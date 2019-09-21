@@ -1,1 +1,2 @@
-GET   /     controllers.Default.notFound
+GET   /     controllers.IndexController.index()
+

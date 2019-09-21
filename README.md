@@ -49,4 +49,37 @@ libraryDependencies ++= Seq(
 GET   /     controllers.Default.notFound
 ``` 
 
+## Controllerの追加
 
+notFoundだとつまらないので controllerクラスを追加する
+
+### controllersファイル追加
+
+以下ファイルを追加
+- controllers.IndexController
+``` scala
+import javax.inject.Inject
+import play.api.mvc.{AbstractController, ControllerComponents}
+
+class IndexController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+  def index = Action{
+    Ok("Hello Play World")
+  }
+}
+```
+- Controllerは Action を生成するもの
+- Action とは request をもらって処理して結果を Result にして返すもの
+- Ok() は HttpStatus = 200 のシンプルな Result生成方法
+- Injectアノテーションは JSR330 の java.inject.Inject を利用するほうが、guice への依存が軽減されてよい
+- ControllerComponent は Controllerの便利クラス。Action メソッドが利用できているのもこのおかげ
+- ControllerComponent 自体の定義方法はいくつか種類あるが、上記の AbstractController を利用するケースが調べた感じ多い
+- コントローラーは Play のルータの依存先となり、Play の DI の機構により、コントローラーが生成され、ルータに依存性注入されます
+- コントローラーは 開発者が作成したクラスを DI で利用できますし、作成したクラスでも @Inject を指定することにより芋づる式に DI できます
+
+### conf/routes の記述変更
+
+- 先程用意した conf/routes ファイルを以下に書き換えます
+- / にアクセスすると IndexController.indexの結果を返すになります
+```
+GET   /     controllers.IndexController.index()
+```
