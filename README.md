@@ -55,8 +55,8 @@ notFoundだとつまらないので controllerクラスを追加する
 
 ### controllersファイル追加
 
-以下ファイルを追加
-- controllers.IndexController
+- 以下ファイルを追加
+  - controllers.IndexController
 ``` scala
 import javax.inject.Inject
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -83,3 +83,47 @@ class IndexController @Inject()(cc: ControllerComponents) extends AbstractContro
 ```
 GET   /     controllers.IndexController.index()
 ```
+
+## テストの追加
+
+### org.scalatestplus.play ライブラリ追加
+
+- build.sbt に以下記述追加
+```
+libraryDependencies ++= Seq(
+  guice,
+  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test
+)
+```
+- テストとして以下を追加
+- プロジェクト直下に test フォルダを追加して追加
+
+```scala
+package controllers
+
+import org.scalatest.FunSpec
+import play.api.mvc.Result
+import play.api.test.{FakeRequest, Helpers}
+import play.api.test.Helpers._
+
+import scala.concurrent.Future
+
+class IndexControllerSpec extends FunSpec {
+  describe("Controllerを作成して GET / を実行する") {
+    val controller = new IndexController(Helpers.stubControllerComponents())
+
+    val request = FakeRequest(GET, "/")
+    val result: Future[Result] = controller.index().apply(request)
+    val bodyText: String = contentAsString(result)
+
+    it("Hello Play Worldを返す") {
+      assert(bodyText === "Hello Play World")
+    }
+  }
+}
+```
+
+- ControlComponent は Helpersクラスで作成できる
+- テスト対象のコントローラーを new して作成することでテスト可能
+- Reqquest は FakeRequest で作成して呼び出す
+- contentAsString は play.api.test.Helpers._ 以下に用意されている
