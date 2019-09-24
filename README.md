@@ -127,3 +127,28 @@ class IndexControllerSpec extends FunSpec {
 - テスト対象のコントローラーを new して作成することでテスト可能
 - Reqquest は FakeRequest で作成して呼び出す
 - contentAsString は play.api.test.Helpers._ 以下に用意されている
+
+## Slickを利用したデータベース処理（slickCodeGen)
+
+### build.sbt で SlickCodeGen を行うために project 以下の sbt ファイルに以下の dependencies を追加
+
+```
+libraryDependencies ++= Seq(
+  "com.typesafe.slick" %% "slick-codegen" % "3.3.2",
+  "mysql" % "mysql-connector-java" % "8.0.17",
+)
+```
+
+### sbtCodeGen の実装
+
+- project/SlickCodeGeneratir を参考
+  - application.conf の設定に従い Tables.scala を生成する
+  - outputToMultipleFiles を true にすると Table毎にファイルが生成されます
+- build.sbt にてタスクとして登録
+
+```
+val slickCodeGen = TaskKey[Unit]("slick-code-generator")
+slickCodeGen := {///}
+```  
+
+- TaskKey の label タイトルをキャメルケースに置き換えたコマンドが sbt で利用可能になります
