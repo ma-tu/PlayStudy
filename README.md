@@ -139,7 +139,7 @@ libraryDependencies ++= Seq(
 )
 ```
 
-### sbtCodeGen の実装
+### slickCodeGen の実装
 
 - project/SlickCodeGeneratir を参考
   - application.conf の設定に従い Tables.scala を生成する
@@ -152,3 +152,87 @@ slickCodeGen := {///}
 ```  
 
 - TaskKey の label タイトルをキャメルケースに置き換えたコマンドが sbt で利用可能になります
+
+## Slickを利用したデータベース処理（slick実行)
+
+### 依存関係の追加
+
+- build.sbt に以下依存関係追加
+```
+libraryDependencies ++= Seq(
+  "com.typesafe.play" %% "play-slick" % "4.0.2",
+  "mysql" % "mysql-connector-java" % "8.0.17"
+}
+```
+- play-slick を追加すれば slick は自動的に利用可能になります
+
+### application.conf の記述追加
+
+- play-slick で利用する DBの設定になります
+```
+slick{
+  dbs {
+    default {
+      profile = "slick.jdbc.MySQLProfile$"
+      db {
+        driver = "com.mysql.cj.jdbc.Driver"
+        url = "jdbc:mysql://localhost:3306/play_world"
+        user = "root"
+        password = ""
+      }
+    }
+  }
+}
+```
+
+- 上記設定を以下の DatabaseConfigProvider にて読み込んで利用します
+- mysql-connector-java の 8.x から driver は 上記のように cj が追加になっています
+
+### db の取得
+
+- 呼び出したい対象のクラスで以下記述を追加
+
+```
+class SlickController @Inject()(
+  cc: ControllerComponents,
+  protected val dbConfigProvider: DatabaseConfigProvider
+)
+(implicit ec: ExecutionContext)
+  extends AbstractController(cc)
+    with HasDatabaseConfigProvider[JdbcProfile]{
+    ///
+}
+```
+
+- HasDatabaseConfigProvicder[JdbcProfile] を mixinする
+- 上記 trait では dbConfigProvider が未解決なので、dbConfigProvider を DIにて追加する
+- 上記 trait では db 変数が宣言されており、内部では 上記 dbConfigProvide より作成されている
+- @NamedDatabase("<db-name>") protected val dbConfigProvider: DatabaseConfigProvider の記述で別のdatabaseへの接続も可能
+
+### slick での query
+
+- query を記述したいクラスには slickCodeGen で作成した Tables と profile のインポートが必要です
+
+```
+# tables パッケージ以下に Tables がある場合
+import tables.Tables._
+import tables.Tables.profile.api._
+```
+
+- profile.api._ によって result や insert が利用可能になります
+- 他 slickの記述方法は別途 slick 調べましょう
+
+### slick から future、future から Action への変換
+
+- slick の Query は result によって DBIOActionになります
+- DBIOAction を db.run() で呼び出すことにより Futureになります
+- Future[xxx] を map を利用して Future[Result]に変換します
+- Future[Result] を Action.async{} で利用することにより、Result が呼び出しもとに返ります
+
+```
+    val query = Person.filter(_.id === id.bind).map(_.name)
+    db.run(query.result.headOption).map {
+      case Some(name) => Ok(name)
+      case _ => NotFound
+    }
+```

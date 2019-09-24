@@ -1,2 +1,6 @@
-GET   /     controllers.IndexController.index()
+GET   /                           controllers.IndexController.index()
+
+# slick
+GET   /slick/list                 controllers.SlickController.list()
+GET   /slick/id/:id               controllers.SlickController.find(id: Long)
 

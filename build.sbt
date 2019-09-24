@@ -11,8 +11,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 libraryDependencies ++= Seq(
   guice,
-  "com.typesafe.play" %% "play-slick" % "3.0.3",
-  "com.h2database" % "h2" % "1.4.199",
+  "com.typesafe.play" %% "play-slick" % "4.0.2",
+  "mysql" % "mysql-connector-java" % "8.0.17",
   "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test
 )
 
